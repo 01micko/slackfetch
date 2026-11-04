@@ -51,7 +51,7 @@ $ slackfetch
                  r1w1s1@RachaelTyrell (ThinkPad T14 Gen 2i)
                  ------------------------------------------
      ________    os:        Slackware 15.0+ (-current)
-    /  ______|   kernel:    Linux 7.0.12 (x86_64)
+     /  ______|   kernel:    Linux 7.0.12 (x86_64, fs: ext4)
     | |______    hardware:  Intel Core i7-1185G7 (mem: 46.9 GiB)
     \e______  \e   libc:      glibc 2.42 (sysvinit 3.18)
      ______| |   uptime:    1 hour, 57 minutes (age 394d)
@@ -71,7 +71,7 @@ $ slackfetch
                  r1w1s1@x220 (ThinkPad X220)
                  ---------------------------
      ________    os:        Slackware 15.0+ (-current)
-    /  ______|   kernel:    Linux 7.1.0 (x86_64)
+     /  ______|   kernel:    Linux 7.1.0 (x86_64, fs: ext4)
     | |______    hardware:  Intel Core i7-1185G7 (mem: 46.9 GiB)
     \e______  \e   libc:      glibc 2.42 (sysvinit 3.18)
      ______| |   uptime:    42 minutes (age 394d)
@@ -152,6 +152,10 @@ convention.
 .Bl -tag -width /etc/slackware-version
 .It Pa /etc/slackware-version
 Slackware version string.
+.It Pa /bin/findmnt
+Root filesystem type used for the
+.Dq fs:
+field.
 .It Pa /proc/cpuinfo
 Processor model used for the
 .Dq hardware:
@@ -206,6 +210,9 @@ The processor model is read from
 The memory value is read from
 .Pa /proc/meminfo
 and reports the memory visible to the kernel.
+The filesystem value is read from
+.Pa /bin/findmnt
+and reports the type mounted at the root directory.
 Packages ending in
 .Dq _SBo
 are counted as SlackBuilds.org packages.
