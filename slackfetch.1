@@ -209,9 +209,14 @@ and reports the memory visible to the kernel.
 Packages ending in
 .Dq _SBo
 are counted as SlackBuilds.org packages.
-Packages not ending in a numeric build tag or
-.Dq _SBo
-are counted as unofficial packages.
+Packages ending in a numeric build tag or a Slackware release tag are
+treated as official packages. Slackware release tags use the
+.Dq _slack
+prefix, for example
+.Dq _slack15.0
+and
+.Dq _slack16.0 .
+Other packages are counted as unofficial packages.
 Flatpak applications are counted when the flatpak command is installed.
 .Pp
 When available, the sysvinit version is appended to the

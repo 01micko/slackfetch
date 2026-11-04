@@ -44,7 +44,10 @@ esac
 ## BASIC INFO
 
 host="$(uname -n)"; host="${host%%.*}"
-kernel="$(uname -sr) ($(uname -m))"
+kernel="$(uname -sr) ($(uname -m)"
+filesystem="$(findmnt -n -o FSTYPE --target / 2>/dev/null)"
+[ -n "$filesystem" ] && kernel="$kernel, fs: $filesystem"
+kernel="$kernel)"
 cpu="$(awk -F ': ' '
     /^model name/ {
         cpu = $2
@@ -57,8 +60,7 @@ cpu="$(awk -F ': ' '
         exit
     }
 ' /proc/cpuinfo 2>/dev/null)"
-memory="$(awk '/^MemTotal:/ { printf "%.1f GiB", $2 / 1048576; exit }' \
-    /proc/meminfo 2>/dev/null)"
+memory="$(awk '/^MemTotal:/ { printf "%.1f GiB", $2 / 1048576; exit }' /proc/meminfo 2>/dev/null)"
 hardware="$cpu"
 [ -n "$memory" ] && hardware="$hardware (mem: $memory)"
 uptime="$(uptime -p 2>/dev/null | sed 's/^up //')"
@@ -82,8 +84,7 @@ done
 
 init_ver=""
 if [ -x /sbin/init ]; then
-    init_ver="$(/sbin/init --version 2>/dev/null \
-        | sed -n 's/^SysV init version: /sysvinit /p')"
+    init_ver="$(/sbin/init --version 2>/dev/null | sed -n 's/^SysV init version: /sysvinit /p')"
 fi
 [ -n "$libc" ] && [ -n "$init_ver" ] && libc="$libc ($init_ver)"
 
@@ -218,15 +219,15 @@ if [ -d /var/log/packages ]; then
     package_extra=""
     flatpak=""
     total="$(find -L /var/log/packages -mindepth 1 -maxdepth 1 -printf '.' | wc -c)"
-    sbo="$(find -L /var/log/packages -mindepth 1 -maxdepth 1 -printf '%f\n' |
-        grep -c '_SBo$')"
-    unofficial="$(find -L /var/log/packages -mindepth 1 -maxdepth 1 -printf '%f\n' |
-        grep -cvE '(-[0-9]+|_SBo)$')"
+    sbo="$(find -L /var/log/packages -mindepth 1 -maxdepth 1 -printf '%f\n' | grep -c '_SBo$')"
+    unofficial="$(find -L /var/log/packages -mindepth 1 -maxdepth 1 -printf '%f\n' | grep -cvE '(-[0-9]+|_SBo|_slack[0-9]+(\.[0-9]+)?)$')"
+
     if command -v flatpak >/dev/null 2>&1; then
         flatpak="$(flatpak list --app 2>/dev/null | wc -l | tr -d ' ')"
     fi
     [ -n "$total" ] && packages="$total"
     [ -n "$sbo" ] && [ "$sbo" -gt 0 ] 2>/dev/null && package_extra="$sbo SBo"
+
     if [ -n "$unofficial" ] && [ "$unofficial" -gt 0 ] 2>/dev/null; then
         [ -n "$package_extra" ] && package_extra="$package_extra, "
         package_extra="${package_extra}${unofficial} unofficial"
