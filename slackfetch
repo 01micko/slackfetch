@@ -271,6 +271,12 @@ if [ -n "$tty_name" ] && [ -z "$SSH_CONNECTION" ] &&
         session_font="${session_font#\'}"
         session_font="${session_font%\'}"
     fi
+elif [ -n "$wm" ]; then
+    session_kind="$wm"
+    if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] ||
+       [ -n "$SSH_TTY" ]; then
+        session_kind="$session_kind (ssh)"
+    fi
 elif [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
     session_kind="ssh"
     case "$tty_path" in
@@ -281,8 +287,6 @@ elif [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
             esac
             ;;
     esac
-elif [ -n "$wm" ]; then
-    session_kind="$wm"
 elif [ -n "$display" ]; then
     session_kind="$display"
 fi
@@ -310,9 +314,12 @@ wm_details="${display}"
 [ -n "$font" ] && [ -z "$wm_details" ] && wm_details="font: $font"
 [ -n "$wm_details" ] && wm_label="$wm ($wm_details)"
 session_value="$session_kind"
-if [ -n "$wm" ] && [ -z "$SSH_CONNECTION" ] &&
-   [ -z "$SSH_CLIENT" ] && [ -z "$SSH_TTY" ]; then
+if [ -n "$wm" ]; then
     session_value="$wm_label"
+    if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] ||
+       [ -n "$SSH_TTY" ]; then
+        session_value="$session_value (ssh)"
+    fi
 fi
 if [ -n "$de" ]; then
     session="${lc}de:        ${ic}${de}${reset}"
