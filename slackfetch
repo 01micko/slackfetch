@@ -107,9 +107,29 @@ case "$shell" in
 esac
 
 ## MULTIPLEXER
-[ -n "$TMUX" ] && shell="$shell (tmux)"
-[ -n "$STY"  ] && shell="$shell (screen)"
-[ -n "$MTM"  ] && shell="$shell (mtm)"
+multiplexer=""
+if [ -n "$TMUX" ]; then
+    multiplexer="tmux"
+elif [ -n "$STY" ]; then
+    multiplexer="screen"
+elif [ -n "$MTM" ]; then
+    multiplexer="mtm"
+elif [ -r /proc/1/status ]; then
+    pid=$$
+    while [ -n "$pid" ] && [ "$pid" -gt 1 ] 2>/dev/null; do
+        process="$(cat "/proc/$pid/comm" 2>/dev/null)"
+        case "$process" in
+            tmux|tmux:*) multiplexer="tmux"; break ;;
+            screen|screen-*|SCREEN) multiplexer="screen"; break ;;
+            mtm) multiplexer="mtm"; break ;;
+        esac
+        next_pid="$(sed -n 's/^PPid:[[:space:]]*//p' \
+            "/proc/$pid/status" 2>/dev/null)"
+        [ "$next_pid" = "$pid" ] && break
+        pid="$next_pid"
+    done
+fi
+[ -n "$multiplexer" ] && shell="$shell ($multiplexer)"
 
 ## DESKTOP MANAGER
 
@@ -273,10 +293,6 @@ if [ -n "$tty_name" ] && [ -z "$SSH_CONNECTION" ] &&
     fi
 elif [ -n "$wm" ]; then
     session_kind="$wm"
-    if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] ||
-       [ -n "$SSH_TTY" ]; then
-        session_kind="$session_kind (ssh)"
-    fi
 elif [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
     session_kind="ssh"
     case "$tty_path" in
@@ -316,10 +332,6 @@ wm_details="${display}"
 session_value="$session_kind"
 if [ -n "$wm" ]; then
     session_value="$wm_label"
-    if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_CLIENT" ] ||
-       [ -n "$SSH_TTY" ]; then
-        session_value="$session_value (ssh)"
-    fi
 fi
 if [ -n "$de" ]; then
     session="${lc}de:        ${ic}${de}${reset}"
